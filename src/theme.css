@@ -1,0 +1,143 @@
+/* ==========================================================================
+   FloodWatch Cebu - design tokens
+   --------------------------------------------------------------------------
+   THIS IS THE ONLY FILE IN THE APP THAT CONTAINS COLOR VALUES.
+   Change a value here and it changes everywhere. Colors are PROVISIONAL.
+
+   Two blocks below:
+     1. :root       - the raw palette. Edit these.
+     2. @theme      - maps the palette onto Tailwind class names
+                      (--color-primary  ->  bg-primary / text-primary / ...).
+                      You normally do NOT need to touch this block.
+   ========================================================================== */
+
+:root {
+  /* --- Brand blues ------------------------------------------------------ */
+  --primary: #004a7c;        /* deep blue: headers, primary buttons        */
+  --primary-hover: #013d67;  /* pressed state of primary                   */
+  --primary-deep: #012f4f;   /* darkest blue, gradient ends                */
+  --primary-soft: #e7eff6;   /* pale blue surface / selected rows          */
+  --on-primary: #ffffff;     /* text on top of --primary                   */
+
+  --secondary: #54a2e2;      /* lighter blue: accents, water, links        */
+  --secondary-soft: #e8f3fc; /* pale accent surface                        */
+  --on-secondary: #06283f;   /* text on top of --secondary                 */
+
+  /* --- Status ----------------------------------------------------------- */
+  /* Amber is reserved for flood warnings. Never use it for decoration.     */
+  --alert: #e8a33d;
+  --alert-strong: #c9861f;   /* amber that still passes contrast on white  */
+  --alert-soft: #fdf2df;
+  --on-alert: #3b2708;       /* dark ink for text sitting on amber         */
+
+  --danger: #b3382c;         /* restrained red: "flooded now", used rarely */
+  --danger-soft: #fbeae8;
+  --on-danger: #ffffff;
+
+  --safe: #2e8b62;           /* calm green: "clear"                        */
+  --safe-soft: #e7f4ee;
+  --on-safe: #ffffff;
+
+  /* --- Neutrals --------------------------------------------------------- */
+  --canvas: #ffffff;         /* screen background                          */
+  --card: #ffffff;           /* card background                            */
+  --surface: #f3f7fb;        /* soft blue-gray surface                     */
+  --surface-2: #e4edf5;      /* one step stronger                          */
+  --line: #dde7f0;           /* borders and dividers                       */
+
+  --ink: #16263a;            /* dark slate body text                       */
+  --ink-muted: #566d85;      /* secondary text (AA on white)               */
+  --ink-faint: #8095aa;      /* timestamps, hints                          */
+  --on-dark: #ffffff;        /* text on blue                               */
+  --on-dark-muted: #bcd8ed;  /* secondary text on blue                     */
+
+  /* --- Water visuals ---------------------------------------------------- */
+  --water: #9ccbec;
+  --water-deep: #6fb0de;
+
+  /* --- App chrome (demo shell, not part of the product UI) -------------- */
+  --stage: #e9edf2;          /* neutral background behind the phone        */
+  --frame: #16222f;          /* phone bezel                                */
+  --panel: #12202e;          /* presenter demo panel                       */
+
+  /* --- Gradients -------------------------------------------------------- */
+  --grad-header: linear-gradient(162deg, #0a6296 0%, #004a7c 58%, #013d67 100%);
+  --grad-splash: linear-gradient(168deg, #0b6fa8 0%, #004a7c 55%, #01243d 100%);
+  --grad-alert: linear-gradient(168deg, #f2b85f 0%, #e8a33d 52%, #d4901f 100%);
+  --grad-water: linear-gradient(180deg, #9ccbec 0%, #6fb0de 100%);
+
+  /* --- Shadows ---------------------------------------------------------- */
+  --shadow-rgb: 12 38 63;    /* shadow tint, as R G B                      */
+  --sh-card: 0 1px 2px rgb(var(--shadow-rgb) / 0.06),
+             0 10px 26px -14px rgb(var(--shadow-rgb) / 0.22);
+  --sh-float: 0 2px 6px rgb(var(--shadow-rgb) / 0.08),
+              0 18px 38px -16px rgb(var(--shadow-rgb) / 0.32);
+  --sh-frame: 0 40px 90px -30px rgb(var(--shadow-rgb) / 0.55);
+
+  /* --- Shape ------------------------------------------------------------ */
+  --r-card: 22px;
+  --r-lg: 18px;
+  --r-md: 14px;
+  --r-sm: 9px;
+  --r-pill: 999px;
+}
+
+/* ==========================================================================
+   Tailwind bridge - exposes the palette above as utility classes.
+   ========================================================================== */
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-deep: var(--primary-deep);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-soft: var(--secondary-soft);
+  --color-on-secondary: var(--on-secondary);
+
+  --color-alert: var(--alert);
+  --color-alert-strong: var(--alert-strong);
+  --color-alert-soft: var(--alert-soft);
+  --color-on-alert: var(--on-alert);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-on-danger: var(--on-danger);
+
+  --color-safe: var(--safe);
+  --color-safe-soft: var(--safe-soft);
+  --color-on-safe: var(--on-safe);
+
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface-2);
+  --color-line: var(--line);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-on-dark: var(--on-dark);
+  --color-on-dark-muted: var(--on-dark-muted);
+
+  --color-water: var(--water);
+  --color-water-deep: var(--water-deep);
+
+  --color-stage: var(--stage);
+  --color-frame: var(--frame);
+  --color-panel: var(--panel);
+
+  --shadow-card: var(--sh-card);
+  --shadow-float: var(--sh-float);
+  --shadow-frame: var(--sh-frame);
+
+  --radius-card: var(--r-card);
+  --radius-lg: var(--r-lg);
+  --radius-md: var(--r-md);
+  --radius-sm: var(--r-sm);
+  --radius-pill: var(--r-pill);
+
+  --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", sans-serif;
+}
