@@ -83,6 +83,44 @@ export function roadCentre(road: RoadFeature): LatLng {
   return toLatLng(road.properties.at)
 }
 
+/**
+ * The road closest to a point, and how far away it is in metres. Used when
+ * someone drops a pin: warnings are per road, so a pin watches its nearest one.
+ * Flat-earth maths is plenty accurate at city scale.
+ */
+export function nearestRoad([lat, lng]: LatLng): { road: RoadFeature; metres: number } {
+  const mPerLat = 110_574
+  const mPerLng = 111_320 * Math.cos((lat * Math.PI) / 180)
+
+  let best = roads[0]
+  let bestSq = Infinity
+
+  for (const road of roads) {
+    for (const part of road.geometry.coordinates) {
+      for (let i = 1; i < part.length; i++) {
+        /* Segment end points, in metres relative to the query point. */
+        const ax = (part[i - 1][0] - lng) * mPerLng
+        const ay = (part[i - 1][1] - lat) * mPerLat
+        const bx = (part[i][0] - lng) * mPerLng
+        const by = (part[i][1] - lat) * mPerLat
+        const dx = bx - ax
+        const dy = by - ay
+        const lenSq = dx * dx + dy * dy
+        const t = lenSq ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / lenSq)) : 0
+        const px = ax + t * dx
+        const py = ay + t * dy
+        const dSq = px * px + py * py
+        if (dSq < bestSq) {
+          bestSq = dSq
+          best = road
+        }
+      }
+    }
+  }
+
+  return { road: best, metres: Math.sqrt(bestSq) }
+}
+
 /* --- Spreading ------------------------------------------------------------ */
 
 /**

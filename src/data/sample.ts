@@ -146,8 +146,12 @@ export const rainAreas: Record<
 export interface SavedPlace {
   id: string
   label: string
-  kind: 'home' | 'store' | 'route'
+  kind: 'home' | 'store' | 'work'
+  /* The road the warning watches - the nearest main road to the pin. */
   roadId: string
+  /* Where the pin was dropped, [lat, lng]. Without it, the pin sits at the
+     middle of the road. */
+  at?: [number, number]
 }
 
 /* Tess: her store sits on a street one ring out from where the water starts,
@@ -157,22 +161,21 @@ export const savedPlaces: SavedPlace[] = [
   { id: 'home', label: 'Home', kind: 'home', roadId: 'salinas-drive' },
 ]
 
-/* Offered during onboarding so a place can be saved in one tap. */
-export const placeSuggestions: {
-  label: string
-  kind: SavedPlace['kind']
-  roadId: string
-}[] = [
-  { label: 'My sari-sari store', kind: 'store', roadId: 'manalili-street' },
-  { label: 'Home', kind: 'home', roadId: 'salinas-drive' },
-  { label: 'Route to school', kind: 'route', roadId: 'osmena-boulevard' },
-]
-
 export const placeKindLabel: Record<SavedPlace['kind'], string> = {
   home: 'Home',
-  store: 'Store or work',
-  route: 'Route',
+  store: 'Store',
+  work: 'Work',
 }
+
+/* Name filled in when someone picks a type and has not typed their own. */
+export const placeDefaultLabel: Record<SavedPlace['kind'], string> = {
+  home: 'Home',
+  store: 'My sari-sari store',
+  work: 'Work',
+}
+
+/* If the pin lands further than this from any road we watch, say so. */
+export const PIN_FAR_FROM_ROAD_M = 300
 
 /* --- Weather conditions --------------------------------------------------- */
 
@@ -210,28 +213,6 @@ export const floodAlert = {
   /* Minutes of lead time the countdown starts from. */
   leadMinutes: 35,
   reportCount: 8,
-  actions: [
-    {
-      id: 'stock',
-      title: 'Move stock to higher shelves',
-      detail: 'Rice, flour and sacks first.',
-    },
-    {
-      id: 'staff',
-      title: 'Send staff home early',
-      detail: 'Rides stop once it is knee-deep.',
-    },
-    {
-      id: 'delivery',
-      title: 'Delay your supplier delivery',
-      detail: 'Ask them to come after the water drops.',
-    },
-    {
-      id: 'route',
-      title: 'Plan another route',
-      detail: 'Check the map for a road still on Clear.',
-    },
-  ],
 }
 
 /* --- Past alerts ---------------------------------------------------------- */

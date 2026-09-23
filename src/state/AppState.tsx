@@ -163,9 +163,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setProfile((p) => ({ ...p, ...patch }))
   }, [])
 
+  /* One place per road: warnings are per road, so saving a second pin on the
+     same road updates the existing place (new name, type, pin) instead. */
   const addPlace = useCallback((place: Omit<SavedPlace, 'id'>) => {
     setPlaces((current) => {
-      if (current.some((p) => p.roadId === place.roadId)) return current
+      const existing = current.find((p) => p.roadId === place.roadId)
+      if (existing) {
+        return current.map((p) => (p === existing ? { ...existing, ...place } : p))
+      }
       return [...current, { ...place, id: `place-${current.length + 1}-${place.roadId}` }]
     })
   }, [])

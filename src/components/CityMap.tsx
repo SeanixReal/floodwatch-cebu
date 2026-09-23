@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import L from 'leaflet'
-import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import {
   getRoad,
@@ -33,13 +33,33 @@ const weightFor = (kind: string, emphasised: boolean, status: FloodStatus = 'cle
   return base + emphasis + flooding
 }
 
+export interface MapPin {
+  id: string
+  roadId: string
+  label: string
+  /* Exact pin position; without it the pin sits at the middle of the road. */
+  at?: LatLng
+}
+
 interface CityMapProps {
   risk: RiskMap
   /* Draws where it is raining. Leave out for a map without the rain area. */
   rain?: RainMode
+  /* Makes roads tappable. Without it, taps go to the map itself. */
   onSelectRoad?: (roadId: string) => void
   /* Saved places or business locations, drawn as pins. */
-  pins?: { id: string; roadId: string; label: string }[]
+  pins?: MapPin[]
+  /* Opening view. Defaults to the whole city. */
+  center?: LatLng
+  zoom?: number
+  /* Draws one road in the brand blue, on top of the others. */
+  highlightRoadId?: string
+  /* Map movement, for the drag-the-map place picker. */
+  onMove?: (center: LatLng) => void
+  onMoveStart?: () => void
+  onMoveEnd?: (center: LatLng) => void
+  /* Tapping the map glides it to that spot. */
+  panOnClick?: boolean
   /* Draw only this road, zoomed to it. Used by Street Detail. */
   focusRoadId?: string
   interactive?: boolean
@@ -60,6 +80,13 @@ export function CityMap({
   rain,
   onSelectRoad,
   pins = [],
+  center,
+  zoom,
+  highlightRoadId,
+  onMove,
+  onMoveStart,
+  onMoveEnd,
+  panOnClick = false,
   focusRoadId,
   interactive = true,
   className = '',
@@ -72,13 +99,13 @@ export function CityMap({
   const [tilesFailed, setTilesFailed] = useState(false)
 
   const focus = getRoad(focusRoadId)
-  const centre: LatLng = focus ? roadCentre(focus) : cityView.center
+  const centre: LatLng = center ?? (focus ? roadCentre(focus) : cityView.center)
 
   return (
     <div className={`relative ${className}`}>
       <MapContainer
         center={centre}
-        zoom={focus ? 15 : cityView.zoom}
+        zoom={zoom ?? (focus ? 15 : cityView.zoom)}
         minZoom={11}
         maxZoom={18}
         zoomControl={zoomControl}
@@ -110,15 +137,25 @@ export function CityMap({
           risk={risk}
           onSelectRoad={onSelectRoad}
           focusRoadId={focusRoadId}
-          interactive={interactive}
+          highlightRoadId={highlightRoadId}
+          selectable={interactive && !!onSelectRoad}
         />
 
         <PinLayer pins={pins} />
 
+        {(onMove || onMoveStart || onMoveEnd || panOnClick) && (
+          <MapEvents
+            onMove={onMove}
+            onMoveStart={onMoveStart}
+            onMoveEnd={onMoveEnd}
+            panOnClick={panOnClick}
+          />
+        )}
+
         {focus ? (
           <FitToRoad roadId={focus.properties.id} />
         ) : fitPins && pins.length ? (
-          <FitToPins roadIds={pins.map((p) => p.roadId)} />
+          <FitToPins points={pins.map(pinPosition)} />
         ) : (
           <SettleSize />
         )}
@@ -158,12 +195,14 @@ function RoadLayer({
   risk,
   onSelectRoad,
   focusRoadId,
-  interactive,
+  highlightRoadId,
+  selectable,
 }: {
   risk: RiskMap
   onSelectRoad?: (roadId: string) => void
   focusRoadId?: string
-  interactive: boolean
+  highlightRoadId?: string
+  selectable: boolean
 }) {
   const map = useMap()
   const linesRef = useRef<Map<string, L.Polyline>>(new Map())
@@ -177,7 +216,7 @@ function RoadLayer({
   const selectRef = useRef(onSelectRoad)
   selectRef.current = onSelectRoad
 
-  /* Build the lines once per map / focus / interactivity change. */
+  /* Build the lines once per map / focus / selectability change. */
   useEffect(() => {
     const group = L.layerGroup().addTo(map)
     const lines = new Map<string, L.Polyline>()
@@ -195,11 +234,13 @@ function RoadLayer({
         opacity: 0.95,
         lineCap: 'round',
         lineJoin: 'round',
-        interactive,
+        /* Not tappable means taps fall through to the map (the place picker
+           uses that to move the pin). */
+        interactive: selectable,
         bubblingMouseEvents: false,
       })
 
-      if (interactive) {
+      if (selectable) {
         line.on('click', () => selectRef.current?.(id))
         line.bindTooltip(road.properties.name, { sticky: true, direction: 'top' })
       }
@@ -214,21 +255,55 @@ function RoadLayer({
       group.remove()
       linesRef.current = new Map()
     }
-  }, [map, focusRoadId, interactive])
+  }, [map, focusRoadId, selectable])
 
-  /* Recolour whenever the water moves. */
+  /* Recolour whenever the water moves or the highlighted road changes. */
   useEffect(() => {
     for (const [id, line] of linesRef.current) {
       const road = getRoad(id)
       if (!road) continue
       const value = risk[id] ?? 0
+      const highlighted = id === highlightRoadId
       line.setStyle({
-        color: riskColor(value),
-        weight: weightFor(road.properties.kind, id === focusRoadId, statusFromRisk(value)),
+        color: highlighted ? themeColor('--primary') : riskColor(value),
+        weight:
+          weightFor(road.properties.kind, id === focusRoadId, statusFromRisk(value)) +
+          (highlighted ? 3 : 0),
       })
+      if (highlighted) line.bringToFront()
     }
-  }, [risk, focusRoadId])
+  }, [risk, focusRoadId, highlightRoadId])
 
+  return null
+}
+
+/* --------------------------------------------------------------------------
+   Map movement and taps, passed out to the screen.
+   -------------------------------------------------------------------------- */
+
+function MapEvents({
+  onMove,
+  onMoveStart,
+  onMoveEnd,
+  panOnClick,
+}: {
+  onMove?: (center: LatLng) => void
+  onMoveStart?: () => void
+  onMoveEnd?: (center: LatLng) => void
+  panOnClick: boolean
+}) {
+  const centreOf = (map: L.Map): LatLng => {
+    const c = map.getCenter()
+    return [c.lat, c.lng]
+  }
+  const map = useMapEvents({
+    movestart: () => onMoveStart?.(),
+    move: () => onMove?.(centreOf(map)),
+    moveend: () => onMoveEnd?.(centreOf(map)),
+    click: (e) => {
+      if (panOnClick) map.panTo(e.latlng, { animate: true, duration: 0.35 })
+    },
+  })
   return null
 }
 
@@ -236,12 +311,22 @@ function RoadLayer({
    Pins for saved places and business locations.
    -------------------------------------------------------------------------- */
 
-function PinLayer({ pins }: { pins: { id: string; roadId: string; label: string }[] }) {
+/** Where a pin goes: exactly where it was dropped, else the middle of its road. */
+function pinPosition(pin: MapPin): LatLng | null {
+  if (pin.at) return pin.at
+  const road = getRoad(pin.roadId)
+  return road ? roadCentre(road) : null
+}
+
+function PinLayer({ pins }: { pins: MapPin[] }) {
   const map = useMap()
 
   /* Only rebuild when the pins themselves change, not when the parent
      re-renders with a freshly mapped array. */
-  const key = useMemo(() => pins.map((p) => `${p.id}:${p.roadId}:${p.label}`).join('|'), [pins])
+  const key = useMemo(
+    () => pins.map((p) => `${p.id}:${p.roadId}:${p.label}:${p.at?.join(',') ?? ''}`).join('|'),
+    [pins],
+  )
   const pinsRef = useRef(pins)
   pinsRef.current = pins
 
@@ -255,9 +340,8 @@ function PinLayer({ pins }: { pins: { id: string; roadId: string; label: string 
     const placed: { at: LatLng; lift: number }[] = []
 
     for (const pin of current) {
-      const road = getRoad(pin.roadId)
-      if (!road) continue
-      const at = roadCentre(road)
+      const at = pinPosition(pin)
+      if (!at) continue
       let lift = 0
       for (const other of placed) {
         if (roughMetres(at, other.at) < 700 && other.lift === lift) lift += 22
@@ -339,16 +423,13 @@ function FitToRoad({ roadId }: { roadId: string }) {
   return null
 }
 
-function FitToPins({ roadIds }: { roadIds: string[] }) {
+function FitToPins({ points: raw }: { points: (LatLng | null)[] }) {
   const map = useMap()
-  const key = roadIds.join('|')
+  const points = raw.filter((p): p is LatLng => p !== null)
+  const key = points.map((p) => p.join(',')).join('|')
   useEffect(() => {
-    const points = key
-      .split('|')
-      .map((id) => getRoad(id))
-      .filter((r): r is NonNullable<typeof r> => Boolean(r))
-      .map((r) => roadCentre(r))
-    if (!points.length) return
+    const points = key.split('|').map((p) => p.split(',').map(Number) as LatLng)
+    if (!key) return
     /* Generous top padding: each pin carries a label above it. */
     map.fitBounds(L.latLngBounds(points), {
       paddingTopLeft: [40, 48],

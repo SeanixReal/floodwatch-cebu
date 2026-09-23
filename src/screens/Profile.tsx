@@ -1,43 +1,34 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Bell,
   Briefcase,
   ChevronRight,
   Clock,
-  House,
   Languages,
   MessageSquare,
   Plus,
   RotateCcw,
-  Route,
-  Store,
   Trash2,
-  X,
   Zap,
 } from 'lucide-react'
 import { Screen, SectionTitle, TopBar } from '../components/Screen'
-import { Button, Card, StatusChip } from '../components/ui'
+import { Card, StatusChip } from '../components/ui'
+import { placeKindIcon } from '../components/PlacePicker'
 import { useApp } from '../state/AppState'
-import { roadName, roadsByName } from '../data/roads'
+import { roadName } from '../data/roads'
 import {
   alertChannels,
   languages,
   leadTimes,
-  placeKindLabel,
   smsNote,
   user,
-  type SavedPlace,
 } from '../data/sample'
 
 const channelIcon = { sms: MessageSquare, app: Bell, both: Zap }
-const kindIcon = { home: House, store: Store, route: Route }
 
 export function Profile() {
   const navigate = useNavigate()
-  const { profile, updateProfile, places, addPlace, removePlace, statusOf, resetDemo } =
-    useApp()
-  const [adding, setAdding] = useState(false)
+  const { profile, updateProfile, places, removePlace, statusOf, resetDemo } = useApp()
 
   return (
     <Screen nav className="bg-surface" tone="light" statusClass="bg-grad-header">
@@ -72,35 +63,15 @@ export function Profile() {
               </div>
               <button
                 type="button"
-                onClick={() => setAdding((v) => !v)}
+                onClick={() => navigate('/places/new')}
                 className="tappable flex items-center gap-1 text-[13px] font-bold text-primary"
               >
-                {adding ? (
-                  <>
-                    <X size={15} strokeWidth={3} />
-                    Cancel
-                  </>
-                ) : (
-                  <>
-                    <Plus size={15} strokeWidth={3} />
-                    Add
-                  </>
-                )}
+                <Plus size={15} strokeWidth={3} />
+                Add
               </button>
             </div>
 
-            {adding && (
-              <div className="border-t border-line px-4 py-3 animate-rise-in">
-                <AddPlaceForm
-                  onAdd={(place) => {
-                    addPlace(place)
-                    setAdding(false)
-                  }}
-                />
-              </div>
-            )}
-
-            {places.length === 0 && !adding && (
+            {places.length === 0 && (
               <p className="border-t border-line px-4 py-5 text-center text-[13px] font-medium text-ink-muted">
                 No saved places yet. Add one to get a warning before the water arrives.
               </p>
@@ -108,7 +79,7 @@ export function Profile() {
 
             <ul>
               {places.map((p) => {
-                const Icon = kindIcon[p.kind]
+                const Icon = placeKindIcon[p.kind]
                 return (
                   <li key={p.id} className="border-t border-line">
                     <div className="flex items-center gap-3 px-4 py-3.5">
@@ -319,68 +290,5 @@ export function Profile() {
         </p>
       </div>
     </Screen>
-  )
-}
-
-/* -------------------------------------------------------------------------- */
-
-function AddPlaceForm({ onAdd }: { onAdd: (place: Omit<SavedPlace, 'id'>) => void }) {
-  const [label, setLabel] = useState('')
-  const [kind, setKind] = useState<SavedPlace['kind']>('store')
-  const [roadId, setRoadId] = useState(roadsByName[0].properties.id)
-
-  return (
-    <div>
-      <label className="mb-1 block text-[12px] font-bold text-ink-muted">Label</label>
-      <input
-        value={label}
-        onChange={(e) => setLabel(e.target.value)}
-        placeholder="My sari-sari store"
-        className="mb-3 h-11 w-full rounded-md border border-line bg-surface px-3 text-[15px] font-semibold text-ink outline-none focus:border-secondary"
-      />
-
-      <label className="mb-1 block text-[12px] font-bold text-ink-muted">Type</label>
-      <div className="mb-3 flex gap-2">
-        {(Object.keys(placeKindLabel) as SavedPlace['kind'][]).map((k) => {
-          const active = kind === k
-          const Icon = kindIcon[k]
-          return (
-            <button
-              key={k}
-              type="button"
-              onClick={() => setKind(k)}
-              className={`tappable flex flex-1 items-center justify-center gap-1.5 rounded-md border-2 py-2 text-[12px] font-extrabold ${
-                active
-                  ? 'border-primary bg-primary-soft text-primary'
-                  : 'border-line bg-card text-ink-muted'
-              }`}
-            >
-              <Icon size={14} strokeWidth={2.5} />
-              {placeKindLabel[k]}
-            </button>
-          )
-        })}
-      </div>
-
-      <label className="mb-1 block text-[12px] font-bold text-ink-muted">Road</label>
-      <select
-        value={roadId}
-        onChange={(e) => setRoadId(e.target.value)}
-        className="mb-3 h-11 w-full rounded-md border border-line bg-surface px-3 text-[15px] font-semibold text-ink outline-none focus:border-secondary"
-      >
-        {roadsByName.map((r) => (
-          <option key={r.properties.id} value={r.properties.id}>
-            {r.properties.name}
-          </option>
-        ))}
-      </select>
-
-      <Button
-        size="md"
-        onClick={() => onAdd({ label: label.trim() || 'New place', kind, roadId })}
-      >
-        Save place
-      </Button>
-    </div>
   )
 }

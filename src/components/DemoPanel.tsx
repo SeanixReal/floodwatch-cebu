@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import {
+  Camera,
+  CircleAlert,
+  CircleCheckBig,
   CloudRain,
   CloudSun,
   Pause,
@@ -11,8 +14,8 @@ import {
 import { useApp } from '../state/AppState'
 
 /* --------------------------------------------------------------------------
-   Presenter controls. Lives OUTSIDE the phone frame so the app itself stays
-   clean, and is hidden entirely in screenshot mode. Toggle with D.
+   Presenter controls. Live OUTSIDE the phone frame, so they never appear in a
+   screenshot and never look like part of the app. Toggle with D.
    -------------------------------------------------------------------------- */
 
 export function DemoPanel({ onClose }: { onClose: () => void }) {
@@ -112,7 +115,7 @@ export function DemoPanel({ onClose }: { onClose: () => void }) {
 
       <p className="mt-3 border-t border-on-dark/10 pt-2.5 text-[11px] font-medium leading-snug text-on-dark-muted">
         <span className="font-bold text-on-dark">D</span> controls &middot;{' '}
-        <span className="font-bold text-on-dark">S</span> screenshot mode
+        <span className="font-bold text-on-dark">S</span> save screenshot
       </p>
     </aside>
   )
@@ -175,7 +178,37 @@ export function DemoHint() {
   return (
     <div className="fixed bottom-5 right-5 z-[1900] flex items-center gap-2 rounded-md bg-panel/85 px-3 py-2 text-[12px] font-semibold text-on-dark-muted backdrop-blur">
       Press <Key>D</Key> for demo controls <span className="opacity-40">|</span>
-      <Key>S</Key> for screenshot mode
+      <Key>S</Key> to save a screenshot
+    </div>
+  )
+}
+
+/* --- Screenshot status ------------------------------------------------------ */
+
+export type ShotStatus =
+  | { kind: 'idle' }
+  | { kind: 'saving' }
+  | { kind: 'saved'; file: string }
+  | { kind: 'failed' }
+
+/* Shown beside the phone, never inside it, so it is not in the image. */
+export function ShotToast({ status }: { status: ShotStatus }) {
+  if (status.kind === 'idle') return null
+
+  const { Icon, text } =
+    status.kind === 'saving'
+      ? { Icon: Camera, text: 'Saving screenshot...' }
+      : status.kind === 'saved'
+        ? { Icon: CircleCheckBig, text: `Saved ${status.file}` }
+        : { Icon: CircleAlert, text: 'Could not save the screenshot' }
+
+  return (
+    <div
+      role="status"
+      className="animate-sheet-up fixed left-1/2 top-5 z-[2100] flex -translate-x-1/2 items-center gap-2 rounded-md bg-panel px-3.5 py-2.5 text-[13px] font-semibold text-on-dark shadow-float"
+    >
+      <Icon size={16} strokeWidth={2.4} />
+      {text}
     </div>
   )
 }

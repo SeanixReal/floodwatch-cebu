@@ -1,29 +1,18 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  ArrowLeft,
-  ArrowRight,
-  Bell,
-  Check,
-  House,
-  MapPin,
-  MessageSquare,
-  Route,
-  Store,
-  Zap,
-} from 'lucide-react'
+import { ArrowLeft, ArrowRight, Bell, Check, MessageSquare, Zap } from 'lucide-react'
 import { Screen } from '../components/Screen'
 import { Button } from '../components/ui'
 import { Logo } from '../components/Logo'
+import { PlacePicker } from '../components/PlacePicker'
 import { useApp } from '../state/AppState'
-import { roadsByName } from '../data/roads'
+import { getRoad, roadCentre } from '../data/roads'
 import {
   alertChannels,
-  placeKindLabel,
-  placeSuggestions,
+  cityView,
+  savedPlaces,
   smsNote,
   type ChannelId,
-  type SavedPlace,
 } from '../data/sample'
 
 const STEPS = 2
@@ -37,7 +26,7 @@ export function Onboarding() {
 
   return (
     <Screen>
-      <div className="flex items-center gap-3 px-5 pb-5 pt-1">
+      <div className="flex items-center gap-3 px-5 pb-4 pt-1">
         <button
           type="button"
           onClick={() => (step > 0 ? setStep(step - 1) : navigate('/'))}
@@ -65,42 +54,28 @@ export function Onboarding() {
         </button>
       </div>
 
-      <div key={step} className="animate-screen-in px-5 pb-6">
+      <div key={step} className="animate-screen-in px-5 pb-5">
         {step === 0 ? (
-          <ChannelStep
-            value={profile.channel}
-            onChange={(c) => updateProfile({ channel: c })}
-          />
+          <>
+            <ChannelStep
+              value={profile.channel}
+              onChange={(c) => updateProfile({ channel: c })}
+            />
+            <Button className="mt-5" onClick={() => setStep(1)}>
+              Continue
+              <ArrowRight size={18} strokeWidth={2.6} />
+            </Button>
+          </>
         ) : (
-          <PlaceStep onSave={addPlace} onDone={finish} />
+          <PlaceStep
+            onSave={(place) => {
+              addPlace(place)
+              finish()
+            }}
+          />
         )}
       </div>
-
-      {step === 0 && (
-        <div className="px-5 pb-4">
-          <Button onClick={() => setStep(1)}>
-            Continue
-            <ArrowRight size={18} strokeWidth={2.6} />
-          </Button>
-        </div>
-      )}
     </Screen>
-  )
-}
-
-/* --- Step header ---------------------------------------------------------- */
-
-function StepHead({ title, blurb }: { title: string; blurb: string }) {
-  return (
-    <div className="mb-5">
-      <Logo size={34} className="text-primary" />
-      <h1 className="mt-3 text-[26px] font-extrabold leading-tight tracking-tight text-ink">
-        {title}
-      </h1>
-      <p className="mt-1.5 text-[15px] font-medium leading-snug text-ink-muted">
-        {blurb}
-      </p>
-    </div>
   )
 }
 
@@ -117,10 +92,16 @@ function ChannelStep({
 }) {
   return (
     <>
-      <StepHead
-        title="How should we reach you?"
-        blurb="Pick how the warning arrives when water is on the way."
-      />
+      <div className="mb-5">
+        <Logo size={34} className="text-primary" />
+        <h1 className="mt-3 text-[26px] font-extrabold leading-tight tracking-tight text-ink">
+          How should we reach you?
+        </h1>
+        <p className="mt-1.5 text-[15px] font-medium leading-snug text-ink-muted">
+          Pick how the warning arrives when water is on the way.
+        </p>
+      </div>
+
       <ul className="space-y-2.5">
         {alertChannels.map((c) => {
           const active = c.id === value
@@ -180,129 +161,26 @@ function ChannelStep({
   )
 }
 
-/* --- 2. Save a place (optional) ------------------------------------------- */
+/* --- 2. Pin a place (optional - Skip is in the top bar) ------------------- */
 
-const kindIcon = { home: House, store: Store, route: Route }
-
-function PlaceStep({
-  onSave,
-  onDone,
-}: {
-  onSave: (place: Omit<SavedPlace, 'id'>) => void
-  onDone: () => void
-}) {
-  const [label, setLabel] = useState(placeSuggestions[0].label)
-  const [kind, setKind] = useState<SavedPlace['kind']>(placeSuggestions[0].kind)
-  const [roadId, setRoadId] = useState(placeSuggestions[0].roadId)
-
-  const save = () => {
-    if (label.trim()) onSave({ label: label.trim(), kind, roadId })
-    onDone()
-  }
+function PlaceStep({ onSave }: { onSave: Parameters<typeof PlacePicker>[0]['onSave'] }) {
+  /* Starts on the demo store, so the Tess story is still a single tap. */
+  const storeRoad = getRoad(savedPlaces.find((p) => p.kind === 'store')?.roadId)
+  const start = storeRoad ? roadCentre(storeRoad) : cityView.center
 
   return (
     <>
-      <StepHead
-        title="Save a place"
-        blurb="Saved places are how you get a personal warning. You can add more later, or skip this for now."
-      />
-
-      {/* One-tap starting points */}
-      <div className="mb-4 flex flex-wrap gap-2">
-        {placeSuggestions.map((s) => {
-          const active = s.roadId === roadId && s.label === label
-          const Icon = kindIcon[s.kind]
-          return (
-            <button
-              key={s.label}
-              type="button"
-              onClick={() => {
-                setLabel(s.label)
-                setKind(s.kind)
-                setRoadId(s.roadId)
-              }}
-              className={`tappable flex items-center gap-1.5 rounded-pill border px-3 py-2 text-[13px] font-bold ${
-                active
-                  ? 'border-primary bg-primary text-on-primary'
-                  : 'border-line bg-card text-ink-muted'
-              }`}
-            >
-              <Icon size={14} strokeWidth={2.6} />
-              {s.label}
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="rounded-card border border-line bg-card p-4">
-        <label className="mb-1 block text-[12px] font-bold text-ink-muted">
-          What do you call it?
-        </label>
-        <input
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          placeholder="My sari-sari store"
-          className="mb-3 h-12 w-full rounded-md border border-line bg-surface px-3 text-[16px] font-semibold text-ink outline-none focus:border-secondary"
-        />
-
-        <label className="mb-1 block text-[12px] font-bold text-ink-muted">Type</label>
-        <div className="mb-3 flex gap-2">
-          {(Object.keys(placeKindLabel) as SavedPlace['kind'][]).map((k) => {
-            const active = kind === k
-            const Icon = kindIcon[k]
-            return (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setKind(k)}
-                className={`tappable flex flex-1 items-center justify-center gap-1.5 rounded-md border-2 py-2.5 text-[13px] font-extrabold ${
-                  active
-                    ? 'border-primary bg-primary-soft text-primary'
-                    : 'border-line bg-card text-ink-muted'
-                }`}
-              >
-                <Icon size={15} strokeWidth={2.5} />
-                {placeKindLabel[k]}
-              </button>
-            )
-          })}
-        </div>
-
-        <label className="mb-1 block text-[12px] font-bold text-ink-muted">
-          Which road?
-        </label>
-        <div className="relative">
-          <MapPin
-            size={17}
-            strokeWidth={2.4}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint"
-          />
-          <select
-            value={roadId}
-            onChange={(e) => setRoadId(e.target.value)}
-            className="h-12 w-full rounded-md border border-line bg-surface pl-9 pr-3 text-[16px] font-semibold text-ink outline-none focus:border-secondary"
-          >
-            {roadsByName.map((r) => (
-              <option key={r.properties.id} value={r.properties.id}>
-                {r.properties.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <p className="mt-2 text-[12px] font-medium text-ink-faint">
-          Road names come from OpenStreetMap.
+      <div className="mb-4">
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink">
+          Pin your place
+        </h1>
+        <p className="mt-1.5 text-[15px] font-medium leading-snug text-ink-muted">
+          Put the pin on your store or home. We will warn you when water is expected on
+          that street.
         </p>
       </div>
 
-      <div className="mt-5 space-y-2.5">
-        <Button onClick={save}>
-          Save place and finish
-          <ArrowRight size={18} strokeWidth={2.6} />
-        </Button>
-        <Button variant="ghost" onClick={onDone}>
-          Not now
-        </Button>
-      </div>
+      <PlacePicker start={start} startKind="store" saveText="Save and finish" onSave={onSave} />
     </>
   )
 }

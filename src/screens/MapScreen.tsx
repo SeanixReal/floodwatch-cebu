@@ -22,7 +22,7 @@ export function MapScreen() {
           risk={risk}
           rain={rain}
           onSelectRoad={(id) => navigate(`/street/${id}`)}
-          pins={places.map((p) => ({ id: p.id, roadId: p.roadId, label: p.label }))}
+          pins={places.map((p) => ({ id: p.id, roadId: p.roadId, label: p.label, at: p.at }))}
           className="h-full w-full"
           zoomControl
           legendClassName="!bottom-7"

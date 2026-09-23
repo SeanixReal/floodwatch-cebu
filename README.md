@@ -28,27 +28,31 @@ To check a production build: `npm run build`.
 | Key | What it does |
 | --- | --- |
 | **D** | Toggle the presenter panel (city conditions, pause/resume the rain, jump to the alert, reset everything). |
-| **S** | Screenshot mode — hides the phone frame and the on-screen hints, leaving exactly the 390 × 844 screen for pasting into Canva. |
-| **Esc** | Closes the panel and leaves screenshot mode. |
+| **S** | Saves a screenshot: a PNG of the phone mockup — frame, shadow and whatever screen is showing — on a transparent background, at 3× resolution, ready to drop into Canva. The file downloads as `floodwatch-<screen>-<time>.png`. |
+| **Esc** | Closes the panel. |
 
-The presenter panel lives *outside* the phone, so it never appears in a
-screenshot and never looks like part of the app.
+The presenter panel and the on-screen hints live *outside* the phone, so they
+never appear in a screenshot and never look like part of the app.
+
+If Chrome asks whether the site may **download multiple files**, allow it once
+so every press of S saves a file.
 
 ---
 
 ## The demo story (Tess, a sari-sari store owner)
 
 1. **Splash** → auto-advances after ~2 s.
-2. **Onboarding** — choose an alert channel, then optionally save a place.
-   Leave the defaults and Tess's store is saved on **Manalili Street**, by the
-   downtown market.
+2. **Onboarding** — choose an alert channel, then pin a place on the map
+   (optional — Skip is in the top bar). Drag the map or tap a spot and the pin
+   watches the nearest main road. It opens pinned on Tess's store on
+   **Manalili Street**, by the downtown market, so one tap on **Save and
+   finish** keeps the story moving.
 3. **Home** — the map of Cebu City fills the screen, every road green.
 4. Press **D** → **Heavy rain**. Over about 27 seconds the water spreads out
    from the low-lying downtown streets: green → amber → red, following roads
    that actually connect to each other.
 5. When her store's road turns **amber**, the **Flood Alert** takes over the
-   screen by itself — 35 minutes of lead time, where the warning came from, and
-   four things she can do now.
+   screen by itself — 35 minutes of lead time and where the warning came from.
 6. **I'm prepared** → back to Home, or **View street** → the street detail for
    Manalili Street, with reports, history and a focused map.
 
@@ -96,9 +100,9 @@ Notes:
 ## Changing the sample data
 
 **All invented content lives in [`src/data/sample.ts`](src/data/sample.ts).**
-That includes the user, saved places, the alert copy and checklist, past
-alerts, the SMS thread, the business locations and plan, and the rules that
-generate per-road reports and flood history.
+That includes the user, saved places and place types, where it is raining,
+the warning's lead time, past alerts, the SMS thread, the business locations
+and plan, and the rules that generate per-road reports and flood history.
 
 Two house rules that file documents and the app follows everywhere:
 
@@ -181,11 +185,12 @@ src/
 │   ├── AppState.tsx       ← one store: weather, roads, places, the warning
 │   └── floodSim.ts        ← the spreading-water engine
 ├── components/            ← phone frame, screen scaffold, map, charts, UI bits
-└── screens/               ← the eleven screens
+└── screens/               ← the twelve screens
 ```
 
 Screens: Splash · Onboarding · Home · Map · Flood Alert · Street Detail ·
-Report a Flood · SMS Preview · Alerts · Business Dashboard · Profile.
+Report a Flood · SMS Preview · Alerts · Business Dashboard · Profile ·
+Add a Place.
 
 Built with React + Vite + TypeScript, Tailwind CSS v4, React Router,
 lucide-react and Leaflet / react-leaflet. The font (Plus Jakarta Sans) is

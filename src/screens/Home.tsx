@@ -5,13 +5,11 @@ import {
   CircleCheckBig,
   CloudDrizzle,
   CloudRain,
-  House,
-  Route,
-  Store,
   TriangleAlert,
 } from 'lucide-react'
 import { Screen } from '../components/Screen'
 import { CityMap } from '../components/CityMap'
+import { placeKindIcon } from '../components/PlacePicker'
 import { Logo } from '../components/Logo'
 import { StatusChip } from '../components/ui'
 import { useApp, formatCountdown } from '../state/AppState'
@@ -19,7 +17,6 @@ import { statusCounts } from '../state/floodSim'
 import { roadName } from '../data/roads'
 import { conditions, statusLabels, type SavedPlace } from '../data/sample'
 
-const placeIcon = { home: House, store: Store, route: Route }
 
 export function Home() {
   const navigate = useNavigate()
@@ -104,7 +101,7 @@ export function Home() {
           risk={risk}
           rain={rain}
           onSelectRoad={(id) => navigate(`/street/${id}`)}
-          pins={places.map((p) => ({ id: p.id, roadId: p.roadId, label: p.label }))}
+          pins={places.map((p) => ({ id: p.id, roadId: p.roadId, label: p.label, at: p.at }))}
           className="h-full w-full"
           badgeClassName={alertPlace ? 'right-2 top-[126px]' : 'right-2 top-2'}
         />
@@ -208,7 +205,7 @@ function PlaceChip({
   status: ReturnType<ReturnType<typeof useApp>['statusOf']>
   onClick: () => void
 }) {
-  const Icon = placeIcon[place.kind]
+  const Icon = placeKindIcon[place.kind]
   return (
     <button
       type="button"
