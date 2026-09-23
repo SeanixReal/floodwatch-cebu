@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { PhoneFrame } from './components/PhoneFrame'
 import { DemoHint, DemoPanel, ShotToast, type ShotStatus } from './components/DemoPanel'
 import { useApp } from './state/AppState'
@@ -57,6 +58,7 @@ export default function App() {
 
       {demoOpen ? <DemoPanel onClose={() => setDemoOpen(false)} /> : <DemoHint />}
       <ShotToast status={shot.status} />
+      <Analytics />
     </div>
   )
 }
