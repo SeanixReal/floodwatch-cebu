@@ -10,7 +10,7 @@ import { statusFromRisk, statusLabels } from '../data/sample'
 
 export function MapScreen() {
   const navigate = useNavigate()
-  const { risk, places } = useApp()
+  const { risk, rain, places } = useApp()
 
   const affected = affectedRoads(risk)
 
@@ -20,6 +20,7 @@ export function MapScreen() {
       <div className="relative min-h-0 flex-[3]">
         <CityMap
           risk={risk}
+          rain={rain}
           onSelectRoad={(id) => navigate(`/street/${id}`)}
           pins={places.map((p) => ({ id: p.id, roadId: p.roadId, label: p.label }))}
           className="h-full w-full"

@@ -12,6 +12,8 @@ import {
 import { cityView, statusFromRisk, statusLabels, type FloodStatus } from '../data/sample'
 import { riskColor, themeColor } from '../theme'
 import type { RiskMap } from '../state/floodSim'
+import type { RainMode } from '../state/AppState'
+import { RainOverlay } from './RainOverlay'
 
 /* --------------------------------------------------------------------------
    The map of Cebu City.
@@ -33,6 +35,8 @@ const weightFor = (kind: string, emphasised: boolean, status: FloodStatus = 'cle
 
 interface CityMapProps {
   risk: RiskMap
+  /* Draws where it is raining. Leave out for a map without the rain area. */
+  rain?: RainMode
   onSelectRoad?: (roadId: string) => void
   /* Saved places or business locations, drawn as pins. */
   pins?: { id: string; roadId: string; label: string }[]
@@ -53,6 +57,7 @@ interface CityMapProps {
 
 export function CityMap({
   risk,
+  rain,
   onSelectRoad,
   pins = [],
   focusRoadId,
@@ -97,6 +102,9 @@ export function CityMap({
           maxZoom={19}
           eventHandlers={{ tileerror: () => setTilesFailed(true) }}
         />
+
+        {/* Between the tiles and the roads, so it never tints road status. */}
+        {rain && <RainOverlay mode={rain} />}
 
         <RoadLayer
           risk={risk}

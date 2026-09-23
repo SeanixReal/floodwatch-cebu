@@ -54,6 +54,8 @@
   /* --- Water visuals ---------------------------------------------------- */
   --water: #9ccbec;
   --water-deep: #6fb0de;
+  --rain: #3f8fd8;           /* rain area on the map (drawn translucent)   */
+  --rain-core: #1f6db8;      /* heaviest part of the rain, and the drops   */
 
   /* --- App chrome (demo shell, not part of the product UI) -------------- */
   --stage: #e9edf2;          /* neutral background behind the phone        */
@@ -123,6 +125,8 @@
 
   --color-water: var(--water);
   --color-water-deep: var(--water-deep);
+  --color-rain: var(--rain);
+  --color-rain-core: var(--rain-core);
 
   --color-stage: var(--stage);
   --color-frame: var(--frame);

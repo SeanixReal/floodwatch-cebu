@@ -114,6 +114,50 @@
   display: none !important;
 }
 
+/* Rain area (RainOverlay). The cloud grows in and fades up when its rain
+   mode becomes active, and drifts slowly while it is on screen. Percentages
+   in these transforms are relative to the overlay itself. */
+.rain-cloud {
+  opacity: 0;
+  transform: scale(0.55);
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  transition:
+    opacity 2.2s ease,
+    transform 3.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rain-cloud.is-on {
+  opacity: 1;
+  transform: none;
+}
+.rain-drift {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: rain-drift 14s ease-in-out infinite alternate;
+}
+
+.rain-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transform: translate(-50%, -50%);
+  padding: 3px 8px 3px 6px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rain) 45%, transparent);
+  color: var(--rain-core);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: var(--sh-card);
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+.rain-label.is-on {
+  opacity: 1;
+}
+
 /* --------------------------------------------------------------------------
    Motion
    -------------------------------------------------------------------------- */
@@ -194,6 +238,15 @@
   }
   to {
     transform: translateX(-40px);
+  }
+}
+
+@keyframes rain-drift {
+  from {
+    transform: translate(-2.5%, 1%);
+  }
+  to {
+    transform: translate(2.5%, -1.5%);
   }
 }
 

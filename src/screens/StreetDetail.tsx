@@ -36,7 +36,7 @@ const trendMeta: Record<Trend, { label: string; Icon: typeof TrendingUp }> = {
 export function StreetDetail() {
   const { roadId } = useParams()
   const navigate = useNavigate()
-  const { risk, riskOf, statusOf, myReports } = useApp()
+  const { risk, rain, riskOf, statusOf, myReports } = useApp()
 
   /* Fall back to a real road rather than a blank screen if the id is unknown. */
   const road = getRoad(roadId) ?? roads[0]
@@ -154,6 +154,7 @@ export function StreetDetail() {
           <Card className="overflow-hidden !p-0">
             <CityMap
               risk={risk}
+              rain={rain}
               focusRoadId={id}
               interactive={false}
               showLegend={false}

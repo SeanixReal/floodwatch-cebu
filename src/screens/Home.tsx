@@ -102,6 +102,7 @@ export function Home() {
       <div className="relative min-h-0 flex-1">
         <CityMap
           risk={risk}
+          rain={rain}
           onSelectRoad={(id) => navigate(`/street/${id}`)}
           pins={places.map((p) => ({ id: p.id, roadId: p.roadId, label: p.label }))}
           className="h-full w-full"

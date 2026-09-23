@@ -127,6 +127,20 @@ export const cityView = {
   zoom: 13,
 }
 
+/* --- Where the rain is ---------------------------------------------------- */
+
+/* Drawn on the map as a soft, radar-style rain area. The heavy area sits over
+   the downtown streets the flood scenario starts from, so the map shows why
+   the water starts there. `radiusKm` is roughly how far the rain reaches from
+   its centre; `label` is the tag shown on the map. */
+export const rainAreas: Record<
+  'normal' | 'heavy',
+  { center: [number, number]; radiusKm: number; label: string }
+> = {
+  normal: { center: [10.336, 123.876], radiusKm: 1.6, label: 'Light rain' },
+  heavy: { center: [10.301, 123.891], radiusKm: 3.4, label: 'Heavy rain' },
+}
+
 /* --- Saved places --------------------------------------------------------- */
 
 export interface SavedPlace {

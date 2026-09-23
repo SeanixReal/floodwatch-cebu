@@ -11,7 +11,7 @@ import { businessLocations, businessPlan } from '../data/sample'
 
 export function BusinessDashboard() {
   const navigate = useNavigate()
-  const { statusOf, risk } = useApp()
+  const { statusOf, risk, rain } = useApp()
   const [planNote, setPlanNote] = useState(false)
 
   return (
@@ -36,6 +36,7 @@ export function BusinessDashboard() {
         <div className="overflow-hidden rounded-card border border-line bg-card shadow-card">
           <CityMap
             risk={risk}
+            rain={rain}
             onSelectRoad={(id) => navigate(`/street/${id}`)}
             pins={businessLocations.map((l) => ({
               id: l.id,
