@@ -1,0 +1,28 @@
+FloodWatch Cebu - colour palette (provisional, from src/theme.css)
+Typeface: Plus Jakarta Sans (ExtraBold for headings, SemiBold/Medium for body)
+
+BRAND BLUES
+  #004A7C  Deep Blue      Main brand colour. Headers, buttons, logo.
+  #54A2E2  Sky Blue       Accents, water, links, "Cebu" in the wordmark.
+  #012F4F  Midnight Blue  Darkest blue. Dark backgrounds.
+  #9CCBEC  Water Blue     Water in the logo, water visuals.
+  #E7EFF6  Mist Blue      Pale blue panels and highlights.
+
+STATUS - USE ONLY FOR THEIR MEANING
+  #E8A33D  Warning Amber  FLOOD WARNINGS ONLY. Never decoration.
+  #B3382C  Flood Red      "Flooding now". Use sparingly.
+  #2E8B62  Clear Green    "Clear" status.
+
+NEUTRALS
+  #16263A  Slate Ink      Body text.
+  #566D85  Muted Slate    Secondary text.
+  #F3F7FB  Cloud          Soft background panels.
+  #FFFFFF  White          Main background.
+
+GRADIENTS
+  #0A6296 -> #004A7C -> #013D67  Header gradient - App headers, title slides.
+  #0B6FA8 -> #004A7C -> #01243D  Splash gradient - Full-bleed covers.
+  #F2B85F -> #E8A33D -> #D4901F  Warning gradient - Flood warning moments only.
+
+Rule: amber is for flood warnings only. Keep everything else calm blue and white
+so the warning reads as urgent the moment it appears.
